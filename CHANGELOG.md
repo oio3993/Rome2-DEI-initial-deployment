@@ -17,6 +17,10 @@
 - Reproduce the existing NavalNormal Test01 pack byte for byte with full native
   and payload verification.
 - Document installation, compatibility, build steps and patch behavior.
+- Add a push/PR/manual GitHub Actions workflow with SHA-verified Ubuntu/GNU/Lua
+  inputs, an exact native rebuild and public-source tests. Keep final DEI pack
+  verification local; replace the release-pack-dependent test with synthetic
+  positive/tamper cases, bringing packaging coverage to 19 checks.
 - Apply the MIT License, copyright 2026 oio3993.
 
 These publication changes retain the baseline runtime C/Lua bytes, DLL and pack.

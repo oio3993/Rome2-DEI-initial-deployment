@@ -105,7 +105,8 @@ what was present at initial deployment versus what arrived later.
 | Native rebuild, 2026-11-04 | GCC `13.2.0-23ubuntu4` / binutils `2.42-4ubuntu2` reproduced the baseline DLL exactly. |
 | Native static verification | PE32 x86, imports/exports, DllMain stdcall return, all 103 linked operands, and required ASLR fixups passed. The mod DLL was not loaded by these checks. |
 | Standalone Lua tests | 41 loader cases and 33 campaign cases passed on a separate Lua 5.4 Windows host. Native exports were mocked. |
-| Pack/input tests | 14 synthetic and tamper cases passed. |
+| Pack/input tests | 19 synthetic and tamper cases passed without DEI inputs or a released pack. The earlier 14-case run is historical. |
+| Local CI rehearsal, 2026-11-04 | The pinned Ubuntu build-root bootstrap, fresh native rebuild, 41 loader cases, 33 campaign cases and all 19 packaging cases passed on Linux. GitHub-hosted workflow execution is a separate result after pushing. |
 | Full rebuilt release | All 12 pack entries, nine original DEI prefixes, runtime source identity, 12 Lua syntax checks and all 10,092 interpreted payload bytes passed. Pack bytes match the baseline. |
 
 Automated checks did not run Rome II or its embedded Lua 5.1. The source publication

@@ -7,8 +7,9 @@ import unittest
 from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 import build_pack
-from project import BUILD, BOOTSTRAP, check_dll, decode_payload, sha, write_report
+from project import ROOT, BUILD, DLL, BOOTSTRAP, check_dll, decode_payload, make_payload, sha, write_report
 from pack_io import make_pack, read_pack
+import verify_release
 from verify_release import verify_pack
 
 
@@ -70,15 +71,64 @@ class BuildTools(unittest.TestCase):
     def test_payload_range_rejected(self):
         with self.assertRaises(ValueError):decode_payload(b'return "\\999"')
 
-    def test_tampered_real_pack_rejected(self):
-        from project import DLL,DIST,PACK_NAME
-        raw=bytearray((DIST/PACK_NAME).read_bytes());raw[-1]^=1
-        with self.assertRaises(ValueError):verify_pack(bytes(raw),DLL.read_bytes())
+    def fixture(self):
+        # This is our own tiny campaign input, never a DEI entry or release pack.
+        prefix=b'-- Synthetic campaign input for public CI.\n'
+        native=check_dll(DLL.read_bytes())
+        entries={'campaigns\\fixture\\scripting.lua':prefix+BOOTSTRAP,
+                 'lua_scripts\\rdp_v07sp01_payload.lua':make_payload(native)}
+        for name in ('rdp_v07sp01_campaign.lua','rdp_v07sp01_loader.lua'):
+            entries['lua_scripts\\'+name]=(ROOT/'src/lua'/name).read_bytes()
+        return prefix,native,entries
+
+    def verify_fixture(self,raw,prefix,native,expected_hash):
+        # Scope fixture identities to this call. Production verification retains
+        # all nine real input hashes and the exact NavalNormal pack hash.
+        with patch.dict(verify_release.CAMPAIGN_SHA,{'fixture':sha(prefix)},clear=True), \
+             patch.object(verify_release,'PACK_SHA',expected_hash):
+            return verify_pack(raw,native)
+
+    def test_valid_synthetic_pack(self):
+        prefix,native,entries=self.fixture();raw=make_pack(entries)
+        self.assertEqual(self.verify_fixture(raw,prefix,native,sha(raw)),entries)
+
+    def test_changed_campaign_prefix_rejected(self):
+        prefix,native,entries=self.fixture()
+        entries['campaigns\\fixture\\scripting.lua']=b'-- Changed prefix\n'+BOOTSTRAP
+        raw=make_pack(entries)
+        with self.assertRaisesRegex(ValueError,'DEI prefix differs'):
+            self.verify_fixture(raw,prefix,native,sha(raw))
+
+    def test_changed_runtime_source_rejected(self):
+        prefix,native,entries=self.fixture()
+        entries['lua_scripts\\rdp_v07sp01_campaign.lua']+=b'\n'
+        raw=make_pack(entries)
+        with self.assertRaisesRegex(ValueError,'Runtime source differs'):
+            self.verify_fixture(raw,prefix,native,sha(raw))
+
+    def test_changed_payload_rejected(self):
+        prefix,native,entries=self.fixture()
+        entries['lua_scripts\\rdp_v07sp01_payload.lua']+=b'\n'
+        raw=make_pack(entries)
+        with self.assertRaisesRegex(ValueError,'Packed payload differs'):
+            self.verify_fixture(raw,prefix,native,sha(raw))
+
+    def test_missing_pack_entry_rejected(self):
+        prefix,native,entries=self.fixture()
+        del entries['lua_scripts\\rdp_v07sp01_loader.lua']
+        raw=make_pack(entries)
+        with self.assertRaisesRegex(ValueError,'Unexpected pack entries'):
+            self.verify_fixture(raw,prefix,native,sha(raw))
+
+    def test_final_pack_hash_guard_retained(self):
+        prefix,native,entries=self.fixture();raw=make_pack(entries)
+        with self.assertRaisesRegex(ValueError,'exact NavalNormal'):
+            self.verify_fixture(raw,prefix,native,'0'*64)
 
 
 if __name__=='__main__':
     suite=unittest.defaultTestLoader.loadTestsFromTestCase(BuildTools)
     result=unittest.TextTestRunner(verbosity=1).run(suite)
     write_report('build_tools_tests.json',dict(passed=result.wasSuccessful(),test_count=result.testsRun,
-                 synthetic_and_tamper_tests=True,game_executed=False))
+                 synthetic_and_tamper_tests=True,release_pack_required=False,game_executed=False))
     raise SystemExit(0 if result.wasSuccessful() else 1)

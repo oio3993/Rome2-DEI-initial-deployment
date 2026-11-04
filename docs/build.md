@@ -149,6 +149,10 @@ For a reference-binary run, replace the last command with:
 python3 tools/verify_release.py --pe-only
 ```
 
+The packaging tests use a small synthetic campaign/pack fixture and require no
+DEI originals or finished release pack. The production builder/verifier still
+enforce all nine real input hashes and the exact baseline pack hash.
+
 Keep local inputs outside `dist/`. Input files are read only. The builder requires
 all nine scripts and their recorded hashes, refuses an existing bootstrap, and
 appends `integration/dei_bootstrap.lua` without changing the original prefix.
@@ -165,6 +169,53 @@ The resulting pack must have SHA-256:
 Release verification checks all 12 entries, exact original script prefixes, one
 bootstrap per campaign, runtime source identity, Lua syntax, and all 10,092 bytes
 of the interpreted payload. It writes `dist/SHA256SUMS.txt` after success.
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on pushes, pull requests and manual dispatch.
+It uses GitHub's `ubuntu-24.04` runner, with a separate pinned Ubuntu build root
+prepared by `tools/prepare_ci_environment.py`. GitHub action references are pinned
+to commit hashes, checkout credentials are not persisted, and token permissions
+are limited to reading repository contents. No repository secrets are required.
+
+`.github/ci/ubuntu-24.04.json` records Ubuntu Base and 64 package download URLs,
+versions and SHA-256 hashes. Every download is checked before extraction. This
+keeps GCC `13.2.0-23ubuntu4` and binutils `2.42-4ubuntu2` independent of compiler
+updates in the hosted runner. The standalone CI test library is Lua 5.4.6 from
+Ubuntu; the earlier Windows test host used Lua 5.4.7.
+
+The workflow runs `tools/run_ci.py` in the build root to perform:
+
+1. A fresh native C compilation and exact baseline DLL hash check.
+2. Full PE/ABI, linked COFF operand and ASLR verification.
+3. Payload generation, 41 loader tests and 33 campaign policy tests.
+4. Nineteen packaging/input tests, including valid and tampered synthetic packs.
+
+The same test sequence can be run with `python3 tools/run_ci.py` on a Linux host
+already equipped with the matching GNU tools and Lua shared library. To recreate
+the workflow environment on an x86_64 Linux host with `tar` and `dpkg-deb`:
+
+```sh
+python3 tools/prepare_ci_environment.py --root /tmp/rdp-ci-root
+sudo mknod -m 666 /tmp/rdp-ci-root/dev/null c 1 3
+sudo chroot /tmp/rdp-ci-root /usr/bin/env LC_ALL=C.UTF-8 /usr/bin/python3 /work/repo/tools/run_ci.py
+```
+
+Use a new, nonexistent root directory. The bootstrap copies only `src/`, `tools/`,
+`tests/` and `integration/`; it does not copy local `build/`, `dist/` or game files.
+On GitHub the workflow collects the DLL and JSON reports as a 14-day artifact,
+including available diagnostics after a failed step. It does not create a release
+or publish a player pack.
+
+`build/reports/ci_validation.json` records the pipeline scope. It explicitly marks
+`release_pack_verified=false`: full DEI input and final release verification
+remain the local `build_pack.py --campaign-dir ...` and `verify_release.py` steps.
+No original engine, DEI script, released pack, game installation or game execution
+is needed for CI. A successful job is not an actual battle test.
+
+The pinned-root bootstrap and complete test sequence were rehearsed locally in
+Linux on 2026-11-04. GitHub-hosted execution is a separate result, visible in the
+repository's Actions tab after the workflow is pushed.
 
 ## Outputs and validation scope
 

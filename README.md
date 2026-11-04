@@ -99,6 +99,7 @@ embedded Lua or an actual battle test. Details are in the linked documents.
 | `tests/` | Standalone Lua host and loader, campaign and packaging checks |
 
 - [Build and test](docs/build.md)
+- [Continuous integration](docs/build.md#continuous-integration)
 - [Compatibility, battle policy and known limits](docs/compatibility.md)
 - [Patch addresses and implementation](docs/patch-notes.md)
 - [Changelog](CHANGELOG.md)
