@@ -48,10 +48,40 @@ A compiler/linker combination producing different bytes is rejected. Do not
 change the loader filename, expected size, or payload assertions merely to bypass
 that check. A different runtime build needs a separately reviewed version.
 
-The current tool port has not established an exact compiler-version pin on a
-fresh Linux host. The Windows validation described below used reference extraction,
-not recompilation. Full linked-object verification remains available after an
-actual GNU build; a PE-only result does not claim those checks ran.
+The exact DLL was freshly reproduced on a Windows host using an isolated Ubuntu
+24.04 build guest with these versions:
+
+- `gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0`
+- `binutils 2.42-4ubuntu2` (`GNU ld ... 2.42`)
+- Python 3.12.3 in the guest
+
+The build passed all 103 linked COFF operand checks, absolute-operand ASLR fixup
+checks, and the DllMain stdcall return check. These versions are a verified
+combination; installing the latest Ubuntu packages does not pin those versions.
+
+### Windows command using the prepared portable environment
+
+The optional launcher accepts a separately prepared QEMU/Ubuntu environment:
+
+```powershell
+python tools/build_native_windows.py --env-dir C:\path\to\gnu-build-env
+python tools/verify_native.py
+```
+
+It requires `base-initramfs.gz`, `vmlinuz`, and the complete extracted QEMU Windows
+directory at `qemu/` below the supplied directory. The launcher checks the tested
+image, kernel and QEMU executable fingerprints before running. Environment images
+and third-party executables are not part of this source repository. The currently
+prepared local environment can be reused without WSL, administrator rights,
+changing Windows features, or restarting Windows. This launcher consumes that
+environment; it does not download or provision a new environment on another PC.
+For a new build host, use the Linux commands and pinned GNU versions above.
+
+The guest receives copies of the sources, has no network or host disk mounts, and
+returns the compiled DLL, ELF/COFF objects and validation reports over its serial
+output. The launcher then repeats the full native verification on Windows.
+`build/reports/windows_gnu_build.json` records that run. Serial output remains in
+`build/reports/windows_gnu_serial.log`; it contains encoded build outputs.
 
 ## Explicit reference-binary mode
 
@@ -153,10 +183,13 @@ dist/
 payload is never placed in `src/lua/`. `.gitattributes` enforces LF for the source
 files whose bytes are checked, including Windows checkouts.
 
-The publication port was tested with the exact reference DLL on Windows, a
-separate official Lua 5.4.7 x64 test library, and local recorded campaign inputs.
-The recreated pack was byte-for-byte identical to the release. These checks do
-not establish a new game test, a native recompilation result, or support for other
-engine/DEI versions. The earlier user game-success report remains a baseline report.
+The publication port was first tested with explicit reference extraction, then
+with an actual C recompilation in the pinned GNU environment described above.
+Windows release verification uses a separate official Lua 5.4.7 x64 test library
+and the local recorded campaign inputs. Both the recompiled DLL and recreated
+pack were byte-for-byte identical to the release. Full native linked-object
+checks were performed for the recompiled build. These checks do not establish a
+new game test or support for other engine/DEI versions. The earlier user
+game-success report remains a baseline report.
 
 These commands do not install the mod, run the game, commit, or push to GitHub.
