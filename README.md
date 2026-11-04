@@ -78,9 +78,9 @@ The campaign policy accepts `land_normal`, `naval_normal`, `settlement_standard`
 battle selects settlement mode. Other battle types, multiplayer, AI-only battles,
 and standalone custom battles are outside this release's supported integration.
 
-The author reported successful initial deployment in a combined army/fleet attack
-on a port settlement and later reported that the normal-naval trial worked.
-These reports do not establish every naval subtype, campaign, or force size.
+The author has playtested this version throughout a long-running campaign and
+confirmed that it works as intended in most situations encountered. This gameplay
+experience is separate from the automated build and source checks below.
 
 The native DLL has been recompiled from C with byte-for-byte identity to the
 baseline. PE/ABI, 103 linked operands and ASLR fixups passed verification. The

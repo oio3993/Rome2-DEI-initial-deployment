@@ -32,8 +32,8 @@ No new gameplay behavior or new game test is claimed by this entry.
   general deployment mode for that case.
 - Retain the existing land/settlement policy, nine campaign entry points,
   automatic DLL loader, native patch bytes and engine identity checks.
-- Record the author's subsequent report that the naval trial worked. This is not
-  an exhaustive validation of naval subtypes or campaign combinations.
+- Record the author's successful naval trial and subsequent long-running campaign
+  playtesting, which confirmed intended behavior in most situations encountered.
 
 This source baseline excludes the later Profile Test01 diagnostics and the
 separate reinforcement-cap-only variant.

@@ -149,7 +149,7 @@ static findings. Routing to the engine's merge path explains the intended initia
 deployment behavior; complete naval object handling and every practical force
 configuration have not been reconstructed from these sites alone.
 
-The author reported port army/fleet and subsequent normal-naval success. That is
-gameplay evidence for those reported cases, not a complete runtime trace proving
-every branch. The 2026-11-04 exact rebuild and PE/COFF/ABI/ASLR checks establish
-source-to-binary identity, not a new gameplay result.
+The author reports intended behavior in most situations encountered throughout
+a long-running campaign. These playtests provide the gameplay evidence. The
+2026-11-04 exact rebuild and PE/COFF/ABI/ASLR checks separately establish
+source-to-binary identity.

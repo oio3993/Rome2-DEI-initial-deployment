@@ -101,7 +101,7 @@ what was present at initial deployment versus what arrived later.
 
 | Evidence | Result and scope |
 | --- | --- |
-| Author's game reports | Successful initial deployment in a combined army/fleet port attack; later normal-naval trial reported working. Exact exhaustive battle configurations were not recorded. |
+| Author's game reports | Long-running campaign playtesting confirmed intended behavior in most situations encountered. This extends the earlier successful combined army/fleet port attack and normal-naval trial reports. |
 | Native rebuild, 2026-11-04 | GCC `13.2.0-23ubuntu4` / binutils `2.42-4ubuntu2` reproduced the baseline DLL exactly. |
 | Native static verification | PE32 x86, imports/exports, DllMain stdcall return, all 103 linked operands, and required ASLR fixups passed. The mod DLL was not loaded by these checks. |
 | Standalone Lua tests | 41 loader cases and 33 campaign cases passed on a separate Lua 5.4 Windows host. Native exports were mocked. |
@@ -109,6 +109,6 @@ what was present at initial deployment versus what arrived later.
 | Local CI rehearsal, 2026-11-04 | The pinned Ubuntu build-root bootstrap, fresh native rebuild, 41 loader cases, 33 campaign cases and all 19 packaging cases passed on Linux. GitHub-hosted workflow execution is a separate result after pushing. |
 | Full rebuilt release | All 12 pack entries, nine original DEI prefixes, runtime source identity, 12 Lua syntax checks and all 10,092 interpreted payload bytes passed. Pack bytes match the baseline. |
 
-Automated checks did not run Rome II or its embedded Lua 5.1. The source publication
-and exact rebuild do not constitute a new game test. Successful reports do not
-establish all campaigns, naval subtypes, save/load situations, or maximum sizes.
+Gameplay validation comes from the author's long-running campaign playtesting.
+Automated checks separately validate source, binary and packaging consistency;
+they do not execute Rome II or its embedded Lua 5.1.
