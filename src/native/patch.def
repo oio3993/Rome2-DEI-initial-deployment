@@ -1,0 +1,5 @@
+LIBRARY rdp_native_merge_v07
+EXPORTS
+    rdp_install
+    rdp_install_settlement
+    rdp_disable
