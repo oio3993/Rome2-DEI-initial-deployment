@@ -1,0 +1,11 @@
+/build/
+/dist/
+/local-input/
+__pycache__/
+*.py[cod]
+*.o
+*.obj
+*.dll
+*.lib
+*.exp
+/src/lua/rdp_v07sp01_payload.lua
