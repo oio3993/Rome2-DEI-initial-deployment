@@ -25,7 +25,7 @@ cards. See [compatibility and limits](docs/compatibility.md).
 
 ## Requirements
 
-- [Total War: Rome II](https://store.steampowered.com/app/214950/Total_War_ROME_II__Emperor_Edition/)
+- [Total War: Rome II] (https://store.steampowered.com/app/214950/Total_War_ROME_II__Emperor_Edition/)
   on Windows, using the supported x86 engine identified below.
 - [Divide et Impera](https://divideetimperamod.com/), with campaign scripts matching
   the recorded input baseline. Compatibility is identified by hashes rather than
