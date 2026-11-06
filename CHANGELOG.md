@@ -2,38 +2,17 @@
 
 ## Unreleased
 
-### Source publication preparation
+### Source release
 
-- Arrange the existing NavalNormal Test01 sources under `src/native/` and
-  `src/lua/`, with the local DEI bootstrap in `integration/`.
-- Adapt native/pack builders and release verification to the public layout.
-  Generate the payload from the built DLL and obtain full campaign entries from
-  matching local DEI inputs rather than publishing their original scripts here.
-- Adapt standalone loader/campaign tests, add packaging/input checks, and keep
-  generated files outside the tracked source tree.
-- Reproduce the baseline DLL from C with GCC `13.2.0-23ubuntu4` and binutils
-  `2.42-4ubuntu2`; verify PE/ABI, 103 linked operands and ASLR fixups.
-- Add a Windows launcher for the separately prepared portable GNU environment.
-- Reproduce the existing NavalNormal Test01 pack byte for byte with full native
-  and payload verification.
-- Document installation, compatibility, build steps and patch behavior.
-- Add a push/PR/manual GitHub Actions workflow with SHA-verified Ubuntu/GNU/Lua
-  inputs, an exact native rebuild and public-source tests. Keep final DEI pack
-  verification local; replace the release-pack-dependent test with synthetic
-  positive/tamper cases, bringing packaging coverage to 19 checks.
-- Apply the MIT License, copyright 2026 oio3993.
+- Publish the native C, campaign Lua and DLL loader sources under the MIT License.
+- Add native, payload and pack build tools using local DEI inputs.
+- Add loader, campaign and packaging tests with GitHub Actions automation.
+- Add build instructions and patch implementation documentation.
 
-These publication changes retain the baseline runtime C/Lua bytes, DLL and pack.
-No new gameplay behavior or new game test is claimed by this entry.
+## v07 NavalNormal Test01
 
-## NavalNormal Test01 baseline
-
-- Add `naval_normal` to the existing campaign battle-type allowlist and use the
-  general deployment mode for that case.
-- Retain the existing land/settlement policy, nine campaign entry points,
-  automatic DLL loader, native patch bytes and engine identity checks.
-- Record the author's successful naval trial and subsequent long-running campaign
-  playtesting, which confirmed intended behavior in most situations encountered.
-
-This source baseline excludes the later Profile Test01 diagnostics and the
-separate reinforcement-cap-only variant.
+- Enable initial deployment expansion in normal naval battles.
+- Retain both-side deployment expansion for normal land battles and attacker-only
+  expansion for settlement assaults.
+- Include the reinforcement arrival-capacity bypass, automatic DLL loader and
+  nine campaign entry points.

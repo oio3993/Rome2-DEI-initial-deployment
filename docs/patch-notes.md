@@ -2,9 +2,9 @@
 
 [README](../README.md) · [Compatibility](compatibility.md) · [Build](build.md)
 
-This document describes the published v07 NavalNormal Test01 baseline. Addresses
-and engine behavior come from the matching original-engine static analysis and
-the published C/header/Lua source. It is not a trace of a running battle.
+The native DLL changes three engine code locations to expand initial deployment
+and bypass an arrival-capacity check. The addresses below apply to the supported
+engine build.
 
 ## Address convention
 
@@ -52,9 +52,8 @@ rather than implementing a new unit constructor inside the mod DLL.
 
 In settlement mode, kind `2` keeps the merge path. Kind `1` is redirected there
 only when the alliance byte `[EDI+0x65]` is zero; other cases use the separate path.
-The implementation treats zero as the attacking side, consistent with the earlier
-static role analysis and the guarded role-instruction signature. This note does
-not provide a complete reconstruction of the engine's alliance type.
+The implementation uses zero to identify the attacking side and guards the
+corresponding role-instruction signature before installation.
 
 ## Merge bound
 
@@ -136,20 +135,7 @@ the page to executable/readable, and flushes the instruction cache. Engine pages
 are made writable only for the update. The two deployment sites share a page; the
 arrival site is handled separately. The code verifies writes, restores page
 permissions, flushes caches, and attempts rollback when a step fails. Disable
-requires the expected installed bytes before restoring the originals. These
-checks do not constitute a proof of concurrent patching safety.
+requires the expected installed bytes before restoring the originals.
 
 The exports return no Lua status values. Campaign `pcall` success cannot prove
 native installation or rollback success. See the [known limits](compatibility.md).
-
-## Evidence boundaries
-
-The original bytes, branch destinations and generated instruction sequences are
-static findings. Routing to the engine's merge path explains the intended initial
-deployment behavior; complete naval object handling and every practical force
-configuration have not been reconstructed from these sites alone.
-
-The author reports intended behavior in most situations encountered throughout
-a long-running campaign. These playtests provide the gameplay evidence. The
-2026-11-04 exact rebuild and PE/COFF/ABI/ASLR checks separately establish
-source-to-binary identity.

@@ -1,102 +1,66 @@
-# Building NavalNormal Test01
+# Build and test
 
-This source tree targets the unchanged **Initial Deployment v07 NavalNormal Test01**
-runtime. The C sources and the campaign/loader Lua modules match the successful
-baseline pack. The later Profile Test01 diagnostics are not included.
-
-The game target is **Windows x86**. The original native compilation route uses a
-**Linux/WSL build host**, GCC emitting i386 ELF, Python 3.10+, and GNU ld with
-`i386pe` emulation. It does not use MSVC or a MinGW COFF compiler. The existing
-ELF-to-COFF and import-object generators remain part of that route.
+The target is a Windows x86 DLL. Native compilation uses GCC on Linux or WSL to
+produce i386 ELF objects, the Python ELF-to-COFF converter, and GNU ld with
+`i386pe` emulation. Run the commands below from the repository root.
 
 ## Dependencies
 
-- Python 3.10 or newer, standard library only.
-- GCC with `-m32` compilation and GNU ld with `i386pe` support for recompilation.
-- A Lua **5.4 shared library** for developer tests (`liblua5.4.so.0` on the original
-  Linux host). For a compatible Windows build, set `RDP_LUA_LIBRARY` to a local
-  Lua 5.4 DLL matching the architecture of Python. The repository does not bundle
-  that test runtime.
-- Local, unmodified campaign `scripting.lua` inputs from the recorded DEI baseline
-  for the final pack. No game engine DLL is needed for building or these tests.
+- Python 3.10 or newer.
+- GCC with `-m32` support and GNU ld with `i386pe` support.
+- A Lua 5.4 shared library for tests. Linux defaults to `liblua5.4.so.0`; on
+  Windows, set `RDP_LUA_LIBRARY` to a Lua 5.4 DLL matching Python's architecture.
+- Matching local DEI campaign scripts for building the final pack.
 
-The test host is standalone Lua 5.4. It does not execute Rome II's embedded Lua 5.1
-or load the mod DLL. `package.loadlib` is mocked in the loader tests. File fault
-cases are modeled; one additional case performs real host binary file I/O.
+Tests use a standalone Lua 5.4 host with mocked native exports. The original game
+engine DLL is not a build dependency.
 
 ## Recompile the DLL
 
-Run commands from the repository root:
+The reproducible toolchain versions are:
+
+- GCC `13.2.0-23ubuntu4` (13.2.0)
+- GNU binutils `2.42-4ubuntu2`
+- Python 3.12.3 in the pinned Ubuntu environment
 
 ```sh
 python3 tools/build_native.py
 python3 tools/verify_native.py
 ```
 
-Use `--cc /path/to/gcc --ld /path/to/ld` if needed. Compiler/linker versions and
-flags are recorded in `build/reports/native_build.json`. The verifier retains the
-original PE imports/exports, entry-point ABI, linked COFF operand and ASLR fixup
-checks. It needs `build/patch.obj` from the corresponding native build.
+Use `--cc /path/to/gcc --ld /path/to/ld` to select the tools explicitly. The build
+records versions and flags in `build/reports/native_build.json`. Native
+verification checks the PE imports/exports, entry-point ABI, linked COFF operands
+and ASLR fixups, using the corresponding `build/patch.obj`.
 
-The DLL must be 10,092 bytes and have SHA-256:
+The resulting DLL must be 10,092 bytes with SHA-256:
 
 ```text
 93470fef577ebff54d34b16dfbbf0833ed8454857f11680cbc7095f5f9b81b81
 ```
 
-A compiler/linker combination producing different bytes is rejected. Do not
-change the loader filename, expected size, or payload assertions merely to bypass
-that check. A different runtime build needs a separately reviewed version.
+A build with different bytes is rejected. A changed native build requires an
+explicit version update, including the loader filename/size, payload and expected
+hashes. Installing the latest GCC/binutils packages does not pin these versions;
+the [CI environment](#continuous-integration) provides the fixed toolchain.
 
-The exact DLL was freshly reproduced on a Windows host using an isolated Ubuntu
-24.04 build guest with these versions:
+### Optional Windows QEMU wrapper
 
-- `gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0`
-- `binutils 2.42-4ubuntu2` (`GNU ld ... 2.42`)
-- Python 3.12.3 in the guest
-
-The build passed all 103 linked COFF operand checks, absolute-operand ASLR fixup
-checks, and the DllMain stdcall return check. These versions are a verified
-combination; installing the latest Ubuntu packages does not pin those versions.
-
-### Windows command using the prepared portable environment
-
-The optional launcher accepts a separately prepared QEMU/Ubuntu environment:
+With a separately prepared portable environment:
 
 ```powershell
 python tools/build_native_windows.py --env-dir C:\path\to\gnu-build-env
-python tools/verify_native.py
 ```
 
-It requires `base-initramfs.gz`, `vmlinuz`, and the complete extracted QEMU Windows
-directory at `qemu/` below the supplied directory. The launcher checks the tested
-image, kernel and QEMU executable fingerprints before running. Environment images
-and third-party executables are not part of this source repository. The currently
-prepared local environment can be reused without WSL, administrator rights,
-changing Windows features, or restarting Windows. This launcher consumes that
-environment; it does not download or provision a new environment on another PC.
-For a new build host, use the Linux commands and pinned GNU versions above.
+The environment directory must contain `base-initramfs.gz`, `vmlinuz` and the
+complete extracted QEMU Windows directory at `qemu/`. The launcher checks their
+pinned fingerprints, compiles in the guest, then verifies the returned DLL and
+objects on Windows. These environment images and executables are not included
+in the repository or provisioned by the launcher. For a new build environment,
+use the Linux setup under [continuous integration](#continuous-integration).
 
-The guest receives copies of the sources, has no network or host disk mounts, and
-returns the compiled DLL, ELF/COFF objects and validation reports over its serial
-output. The launcher then repeats the full native verification on Windows.
-`build/reports/windows_gnu_build.json` records that run. Serial output remains in
-`build/reports/windows_gnu_serial.log`; it contains encoded build outputs.
-
-## Explicit reference-binary mode
-
-When a GNU compile host is unavailable, recover the exact known DLL from a local
-copy of the released pack:
-
-```sh
-python3 tools/build_native.py --reference-pack /path/to/rdp_v07_singlepack_mc01_naval_test01.pack
-python3 tools/verify_native.py --pe-only
-```
-
-This only decodes and verifies the native bytes. It is **not a source compilation**.
-It writes `native_compiled=false` in the build report, and `--pe-only` reports the
-linked-object checks as not performed. This mode is useful for testing pack/Lua
-tooling while preserving the already released native binary.
+Reports are written to `build/reports/`, including `windows_gnu_build.json` and
+the guest serial log `windows_gnu_serial.log`.
 
 ## Generate payload and run Lua tests
 
@@ -104,25 +68,20 @@ tooling while preserving the already released native binary.
 python3 tools/build_pack.py --payload-only
 python3 tests/test_loader.py
 python3 tests/test_campaign.py
+python3 tests/test_build_tools.py
 ```
 
-Both tests import `tests/lua_host.py`. No old `reference/` source tree is required.
-Campaign tests use explicit expectations for general land/naval battles, settlement
-mode, contested garrisons, exclusions, event order, export caching and loader errors.
-
-On Windows, for example:
+The packaging tests use synthetic campaign/pack fixtures and require no DEI
+originals or released pack. For the Lua tests on Windows, set the shared library:
 
 ```powershell
 $env:RDP_LUA_LIBRARY = 'C:\path\to\lua54.dll'
-python tools/build_pack.py --payload-only
-python tests/test_loader.py
-python tests/test_campaign.py
 ```
 
 ## Supply local campaign inputs and build the pack
 
-Extract the original scripts locally using your pack editor, preserving this
-layout. Supply the **campaigns directory itself** as `--campaign-dir`:
+Extract the matching original DEI scripts with a pack editor, preserving this
+layout. Pass the **campaigns directory itself** as `--campaign-dir`:
 
 ```text
 /path/to/local-dei/campaigns/
@@ -139,26 +98,14 @@ layout. Supply the **campaigns directory itself** as `--campaign-dir`:
 
 ```sh
 python3 tools/build_pack.py --campaign-dir /path/to/local-dei/campaigns
-python3 tests/test_build_tools.py
 python3 tools/verify_release.py
 ```
 
-For a reference-binary run, replace the last command with:
-
-```sh
-python3 tools/verify_release.py --pe-only
-```
-
-The packaging tests use a small synthetic campaign/pack fixture and require no
-DEI originals or finished release pack. The production builder/verifier still
-enforce all nine real input hashes and the exact baseline pack hash.
-
-Keep local inputs outside `dist/`. Input files are read only. The builder requires
-all nine scripts and their recorded hashes, refuses an existing bootstrap, and
-appends `integration/dei_bootstrap.lua` without changing the original prefix.
-The hashes are in `tools/project.py`; full DEI scripts are not in the repository.
-Changed DEI versions are rejected as unverified input and need an explicit
-compatibility review. This build is not an automatic DEI-version migration tool.
+Input files are read only. The builder checks all nine hashes in
+`tools/project.py`, rejects an existing bootstrap, and appends
+`integration/dei_bootstrap.lua`. Keep local inputs outside `dist/`. Full DEI
+scripts are not included in the repository; changed inputs require a compatibility
+review.
 
 The resulting pack must have SHA-256:
 
@@ -166,34 +113,42 @@ The resulting pack must have SHA-256:
 8aa310977f98120e05facf623f871d44cf7a2f95e1168463c563843dcf466da5
 ```
 
-Release verification checks all 12 entries, exact original script prefixes, one
-bootstrap per campaign, runtime source identity, Lua syntax, and all 10,092 bytes
-of the interpreted payload. It writes `dist/SHA256SUMS.txt` after success.
+Release verification checks all 12 entries, original script prefixes, bootstrap
+insertion, runtime source identity, Lua syntax, the interpreted payload and native
+linked objects. It writes `dist/SHA256SUMS.txt` after success.
+
+## Recover the DLL from an existing pack
+
+For a pack-only rebuild without a GNU compiler:
+
+```sh
+python3 tools/build_native.py --reference-pack /path/to/rdp_v07_singlepack_mc01_naval_test01.pack
+python3 tools/verify_native.py --pe-only
+```
+
+This extracts the known DLL rather than compiling C. The report records
+`native_compiled=false`. After rebuilding the pack, use
+`python3 tools/verify_release.py --pe-only`; that mode omits linked-object checks.
 
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on pushes, pull requests and manual dispatch.
-It uses GitHub's `ubuntu-24.04` runner, with a separate pinned Ubuntu build root
-prepared by `tools/prepare_ci_environment.py`. GitHub action references are pinned
-to commit hashes, checkout credentials are not persisted, and token permissions
-are limited to reading repository contents. No repository secrets are required.
+It prepares a pinned Ubuntu build root using
+`.github/ci/ubuntu-24.04.json`: Ubuntu Base and 64 packages, including the fixed
+GCC/binutils versions and a Lua 5.4.6 shared library. Downloads are checked against
+their SHA-256 hashes before extraction. The workflow pins GitHub actions to
+commit hashes and uses read-only repository permissions.
 
-`.github/ci/ubuntu-24.04.json` records Ubuntu Base and 64 package download URLs,
-versions and SHA-256 hashes. Every download is checked before extraction. This
-keeps GCC `13.2.0-23ubuntu4` and binutils `2.42-4ubuntu2` independent of compiler
-updates in the hosted runner. The standalone CI test library is Lua 5.4.6 from
-Ubuntu; the earlier Windows test host used Lua 5.4.7.
+The pipeline compiles and verifies the DLL, generates the payload, and runs
+loader, campaign and packaging tests. On a Linux host with the required GNU tools
+and Lua library already installed, run it directly:
 
-The workflow runs `tools/run_ci.py` in the build root to perform:
+```sh
+python3 tools/run_ci.py
+```
 
-1. A fresh native C compilation and exact baseline DLL hash check.
-2. Full PE/ABI, linked COFF operand and ASLR verification.
-3. Payload generation, 41 loader tests and 33 campaign policy tests.
-4. Nineteen packaging/input tests, including valid and tampered synthetic packs.
-
-The same test sequence can be run with `python3 tools/run_ci.py` on a Linux host
-already equipped with the matching GNU tools and Lua shared library. To recreate
-the workflow environment on an x86_64 Linux host with `tar` and `dpkg-deb`:
+To reproduce the isolated environment on an x86_64 Linux host with `tar` and
+`dpkg-deb`, use a new, nonexistent root directory:
 
 ```sh
 python3 tools/prepare_ci_environment.py --root /tmp/rdp-ci-root
@@ -201,27 +156,19 @@ sudo mknod -m 666 /tmp/rdp-ci-root/dev/null c 1 3
 sudo chroot /tmp/rdp-ci-root /usr/bin/env LC_ALL=C.UTF-8 /usr/bin/python3 /work/repo/tools/run_ci.py
 ```
 
-Use a new, nonexistent root directory. The bootstrap copies only `src/`, `tools/`,
-`tests/` and `integration/`; it does not copy local `build/`, `dist/` or game files.
-On GitHub the workflow collects the DLL and JSON reports as a 14-day artifact,
-including available diagnostics after a failed step. It does not create a release
-or publish a player pack.
+The bootstrap copies `src/`, `tools/`, `tests/` and `integration/` into that root.
+Outputs are under `/tmp/rdp-ci-root/work/repo/build/`. GitHub collects the DLL and
+JSON reports as a 14-day artifact, available from the repository's Actions tab.
 
-`build/reports/ci_validation.json` records the pipeline scope. It explicitly marks
-`release_pack_verified=false`: full DEI input and final release verification
-remain the local `build_pack.py --campaign-dir ...` and `verify_release.py` steps.
-No original engine, DEI script, released pack, game installation or game execution
-is needed for CI. A successful job is not an actual battle test.
+CI does not require DEI inputs or generate a player pack. Final pack verification
+uses the local DEI input commands above. Pipeline results are recorded in
+`build/reports/ci_validation.json`.
 
-The pinned-root bootstrap and complete test sequence were rehearsed locally in
-Linux on 2026-11-04. GitHub-hosted execution is a separate result, visible in the
-repository's Actions tab after the workflow is pushed.
-
-## Outputs and validation scope
+## Outputs
 
 ```text
 build/
-  patch.o, patch.obj, imports.obj       # GNU compile mode
+  patch.o, patch.obj, imports.obj
   rdp_native_merge_v07.dll
   generated/rdp_v07sp01_payload.lua
   reports/*.json
@@ -231,16 +178,5 @@ dist/
 ```
 
 `build/`, `dist/`, local inputs and Python caches are ignored by Git. Generated
-payload is never placed in `src/lua/`. `.gitattributes` enforces LF for the source
+payload stays under `build/generated/`. `.gitattributes` enforces LF for the source
 files whose bytes are checked, including Windows checkouts.
-
-The publication port was first tested with explicit reference extraction, then
-with an actual C recompilation in the pinned GNU environment described above.
-Windows release verification uses a separate official Lua 5.4.7 x64 test library
-and the local recorded campaign inputs. Both the recompiled DLL and recreated
-pack were byte-for-byte identical to the release. Full native linked-object
-checks were performed for the recompiled build. These checks do not establish a
-new game test or support for other engine/DEI versions. The earlier user
-game-success report remains a baseline report.
-
-These commands do not install the mod, run the game, commit, or push to GitHub.
