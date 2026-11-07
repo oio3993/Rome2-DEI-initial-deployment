@@ -33,8 +33,12 @@ local function pending(context)
         local pb = context:pending_battle()
         local battle_type = pb:battle_type()
         local settlement_assault = battle_type == "settlement_standard" or
-            battle_type == "settlement_unfortified" or battle_type == "town_normal"
-        if battle_type ~= "land_normal" and battle_type ~= "naval_normal" and not settlement_assault then return end
+            battle_type == "settlement_unfortified" or battle_type == "town_normal" or
+            battle_type == "fort_standard"
+        local general_battle = battle_type == "land_normal" or battle_type == "naval_normal" or
+            battle_type == "settlement_sally" or battle_type == "coastal_battle" or
+            battle_type == "naval_breakout"
+        if not general_battle and not settlement_assault then return end
         if not pb:has_attacker() or not pb:has_defender() then return end
         if battle_type == "land_normal" and pb:has_contested_garrison() then settlement_assault = true end
         local a, d = pb:attacker():faction(), pb:defender():faction()

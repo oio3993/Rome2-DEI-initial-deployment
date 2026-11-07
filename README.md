@@ -5,9 +5,10 @@ deployment in **Total War: Rome II** with **Divide et Impera**.
 
 ## Features
 
-- Initial deployment for both sides in normal land and naval battles.
-- Attacker-only expansion in settlement assaults; defending external armies
-  arrive as reinforcements.
+- Initial deployment for both sides in normal land/naval battles, settlement
+  sallies, coastal battles and naval breakout battles.
+- Attacker-only expansion in settlement and fort assaults; defending external
+  armies arrive as reinforcements.
 - Reinforcement arrival-capacity bypass.
 - Automatic DLL loading from the pack, with no manual DLL installation.
 

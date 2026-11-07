@@ -1,4 +1,4 @@
-"""Paths and fingerprints for the unchanged NavalNormal Test01 release."""
+"""Paths and fingerprints for the v07 BattleTypes02 release."""
 from pathlib import Path
 import hashlib
 import json
@@ -17,13 +17,13 @@ PAYLOAD = GENERATED / 'rdp_v07sp01_payload.lua'
 PACK_NAME = 'rdp_v07_singlepack_mc01_naval_test01.pack'
 DLL_SHA = '93470fef577ebff54d34b16dfbbf0833ed8454857f11680cbc7095f5f9b81b81'
 DLL_SIZE = 10092
-PACK_SHA = '8aa310977f98120e05facf623f871d44cf7a2f95e1168463c563843dcf466da5'
+PACK_SHA = '6b4595ed0b3282d18c2cb4f126170fef849b0deb314393dabbbbba9144795925'
 BOOTSTRAP = b'\n-- V07 single-pack runtime\nrequire "lua_scripts.rdp_v07sp01_campaign";\n'
 SOURCE_SHA = {
     'src/native/patch.c': '90158b0887590b0d6b47103bde2b935121008c64ee9ae3f475dcbd404a5db4dd',
     'src/native/patch_bytes.h': '82e94c9fb44c6c02efd80bd63f0a3e3bd3c2146773dc00946dc227df78e9732d',
     'src/native/patch.def': 'f72635851de4842ef1b83af4cc52400c1cf36351569121728c3af2d250954aa5',
-    'src/lua/rdp_v07sp01_campaign.lua': 'c6e7d820a93a5fae0ebcd1a4ea372e08892e62f8d681079b2e35e63abf52a99a',
+    'src/lua/rdp_v07sp01_campaign.lua': '9aae50a3d6f51053345a199b57cba9155a82254146d7a85ed05bdab6dbe0a472',
     'src/lua/rdp_v07sp01_loader.lua': 'caeea13c54d384ef01cce8ea4bafe6f624cda475659177993ccd8bf0ea415d3b',
 }
 CAMPAIGN_SHA = {

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Battle types
+
+- Enable attacker-only initial deployment in `fort_standard` battles, retaining
+  the original defender path.
+- Enable both-side initial deployment in settlement sallies, coastal battles
+  and naval breakout battles.
+
 ### Source release
 
 - Publish the native C, campaign Lua and DLL loader sources under the MIT License.

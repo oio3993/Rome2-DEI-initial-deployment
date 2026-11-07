@@ -83,7 +83,7 @@ class BuildTools(unittest.TestCase):
 
     def verify_fixture(self,raw,prefix,native,expected_hash):
         # Scope fixture identities to this call. Production verification retains
-        # all nine real input hashes and the exact NavalNormal pack hash.
+        # all nine real input hashes and the exact supported pack hash.
         with patch.dict(verify_release.CAMPAIGN_SHA,{'fixture':sha(prefix)},clear=True), \
              patch.object(verify_release,'PACK_SHA',expected_hash):
             return verify_pack(raw,native)
@@ -122,7 +122,7 @@ class BuildTools(unittest.TestCase):
 
     def test_final_pack_hash_guard_retained(self):
         prefix,native,entries=self.fixture();raw=make_pack(entries)
-        with self.assertRaisesRegex(ValueError,'exact NavalNormal'):
+        with self.assertRaisesRegex(ValueError,'exact supported'):
             self.verify_fixture(raw,prefix,native,'0'*64)
 
 

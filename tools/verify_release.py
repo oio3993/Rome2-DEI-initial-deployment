@@ -29,7 +29,7 @@ def verify_pack(raw, native):
     payload = entries['lua_scripts\\rdp_v07sp01_payload.lua']
     require(payload == make_payload(native), 'Packed payload differs from the DLL.')
     require(decode_payload(payload) == native, 'Payload roundtrip differs.')
-    require(sha(raw) == PACK_SHA, 'Pack is not the exact NavalNormal Test01 release.')
+    require(sha(raw) == PACK_SHA, 'Pack is not the exact supported release.')
     return entries
 
 

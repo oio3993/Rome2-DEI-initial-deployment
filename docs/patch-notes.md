@@ -108,9 +108,13 @@ attacker-only selection applies to the initial-deployment classifier and bound.
 ## Campaign lifecycle and automatic loading
 
 `rdp_v07sp01_campaign.lua` requests a reset on `PendingBattle`, then applies the
-allowlist and human/single-player checks. General land/naval cases request
-`rdp_install`; settlement cases request `rdp_install_settlement`. `UICreated`
-resets and re-evaluates an active pending battle. `BattleCompleted` requests
+allowlist and human/single-player checks. Normal land/naval battles,
+`settlement_sally`, `coastal_battle` and `naval_breakout` request `rdp_install`
+for both sides. Settlement and `fort_standard` assaults request
+`rdp_install_settlement`, expanding attackers while retaining the original
+defender path. Only `land_normal` with a contested garrison is promoted to
+settlement mode; the three added types keep general mode when a contested
+garrison is present. `UICreated` resets and re-evaluates an active pending battle. `BattleCompleted` requests
 `rdp_disable`. It also removes three project-specific legacy battlefield
 registrations from existing saves and never registers a new battlefield script.
 

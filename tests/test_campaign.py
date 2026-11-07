@@ -1,4 +1,4 @@
-"""Check the NavalNormal baseline policy with explicit expected native calls."""
+"""Check supported battle policies with explicit expected native calls."""
 from pathlib import Path
 import json
 import sys
@@ -50,7 +50,10 @@ def case(name, before, action, expected):
 
 pending = 'events.PendingBattle({pending_battle=function()return pb end})'
 for typ, mode in [('land_normal', 'rdp_install'), ('naval_normal', 'rdp_install'),
+                  ('settlement_sally', 'rdp_install'), ('coastal_battle', 'rdp_install'),
+                  ('naval_breakout', 'rdp_install'),
                   ('settlement_standard', 'rdp_install_settlement'),
+                  ('fort_standard', 'rdp_install_settlement'),
                   ('settlement_unfortified', 'rdp_install_settlement'), ('town_normal', 'rdp_install_settlement')]:
     for human in ('attacker', 'defender'):
         before = "cfg.typ='" + typ + "';cfg.ah=" + str(human=='attacker').lower() + ';cfg.dh=' + str(human=='defender').lower()
@@ -60,8 +63,18 @@ case('naval_contested_keeps_normal', "cfg.typ='naval_normal';cfg.contested=true"
 for name, before in [('multiplayer', 'cfg.mp=true'), ('ai_only', 'cfg.ah=false'),
                      ('missing_attacker', 'cfg.att=false'), ('missing_defender', 'cfg.def=false')]:
     case(name, before, pending, 'rdp_disable')
-for typ in ('naval_blockade','naval_breakout','port_assault','coastal_battle','settlement_sally','settlement_relief','fort_standard'):
+for typ in ('naval_blockade','port_assault','settlement_relief'):
     case('excluded_'+typ, "cfg.typ='"+typ+"'", pending, 'rdp_disable')
+# These types keep both-side mode even when a contested garrison is present.
+for typ in ('settlement_sally', 'coastal_battle', 'naval_breakout'):
+    case(typ+'_contested_keeps_general', "cfg.typ='"+typ+"';cfg.contested=true",
+         pending, 'rdp_disable,rdp_install')
+    case('ui_active_'+typ, "cfg.typ='"+typ+"';cfg.active=true",
+         'events.UICreated()', 'rdp_disable,rdp_disable,rdp_install')
+case('fort_contested_keeps_attacker_only', "cfg.typ='fort_standard';cfg.contested=true",
+     pending, 'rdp_disable,rdp_install_settlement')
+case('ui_active_fort', "cfg.typ='fort_standard';cfg.active=true",
+     'events.UICreated()', 'rdp_disable,rdp_disable,rdp_install_settlement')
 case('ui_without_pending', '', 'events.UICreated()', 'rdp_disable')
 case('ui_active_naval', "cfg.typ='naval_normal';cfg.active=true", 'events.UICreated()', 'rdp_disable,rdp_disable,rdp_install')
 case('ui_active_settlement', "cfg.typ='settlement_standard';cfg.active=true", 'events.UICreated()', 'rdp_disable,rdp_disable,rdp_install_settlement')
@@ -73,7 +86,7 @@ for field in ('load_nil', 'load_throw'):
 case('prepare_failure_retried_by_calls', 'cfg.prepare_fail=true', pending, 'rdp_disable,rdp_install')
 case('callback_sequence_and_cached_exports', '', pending+';events.UICreated();cfg.active=true;events.UICreated();events.BattleCompleted()',
      'rdp_disable,rdp_install,rdp_disable,rdp_disable,rdp_disable,rdp_install,rdp_disable')
-result = dict(passed=True, test_count=len(cases), tests=cases, baseline='NavalNormal Test01',
+result = dict(passed=True, test_count=len(cases), tests=cases, baseline='v07 BattleTypes02',
               old_campaign_reference_required=False, native_exports_mocked=True,
               host_runtime=HOST_RUNTIME, game_runtime_executed=False)
 write_report('campaign_tests.json', result)

@@ -110,7 +110,7 @@ review.
 The resulting pack must have SHA-256:
 
 ```text
-8aa310977f98120e05facf623f871d44cf7a2f95e1168463c563843dcf466da5
+6b4595ed0b3282d18c2cb4f126170fef849b0deb314393dabbbbba9144795925
 ```
 
 Release verification checks all 12 entries, original script prefixes, bootstrap

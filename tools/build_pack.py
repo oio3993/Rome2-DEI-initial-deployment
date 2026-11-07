@@ -53,7 +53,7 @@ def main():
         entries['lua_scripts\\' + name] = (ROOT/'src/lua'/name).read_bytes()
     entries['lua_scripts\\rdp_v07sp01_payload.lua'] = PAYLOAD.read_bytes()
     raw = make_pack(entries)
-    require(sha(raw) == PACK_SHA, 'Pack differs from the exact NavalNormal Test01 baseline.')
+    require(sha(raw) == PACK_SHA, 'Pack differs from the exact supported release.')
     DIST.mkdir(exist_ok=True)
     output = DIST/PACK_NAME
     if args.campaign_dir.resolve().is_relative_to(DIST.resolve()):

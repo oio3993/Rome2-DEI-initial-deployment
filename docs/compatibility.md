@@ -21,19 +21,25 @@ update that changes the engine requires a corresponding mod update.
 | Battle | Initial deployment expansion |
 | --- | --- |
 | Normal land battle (`land_normal`) | Both sides |
-| Land battle with a contested garrison | Attackers only |
+| Normal land battle (`land_normal`) with a contested garrison | Attackers only |
 | Normal naval battle (`naval_normal`) | Both sides |
+| Settlement sally (`settlement_sally`) | Both sides |
+| Coastal battle (`coastal_battle`) | Both sides |
+| Naval breakout (`naval_breakout`) | Both sides |
+| Fort assault (`fort_standard`) | Attackers only |
 | Settlement assault (`settlement_standard`) | Attackers only |
 | Unfortified settlement assault (`settlement_unfortified`) | Attackers only |
 | Town battle (`town_normal`) | Attackers only |
 
-In settlement mode, defending external armies retain reinforcement entry and the
+In settlement and fort assaults, only the attackers receive expanded initial
+deployment. Defending external armies keep their reinforcement entry, and
 existing garrison deployment is preserved. Supporting forces from other factions
 are not merged into initial deployment.
 
-Other battle-type values, including `naval_blockade`, `naval_breakout`,
-`port_assault`, `coastal_battle`, `settlement_sally`, `settlement_relief` and
-`fort_standard`, are not included. Multiplayer, AI-only battles and standalone
+Other battle-type values, including `naval_blockade`, `port_assault` and
+`settlement_relief`, are not included. These entries refer to the internal
+battle-type value; the visible battle situation alone does not determine that
+value. Multiplayer, AI-only battles and standalone
 custom battles are outside the campaign integration.
 
 ## Campaigns
